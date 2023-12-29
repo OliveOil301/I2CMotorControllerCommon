@@ -5,13 +5,19 @@
 //This is the drive type for the motor driver. 
 //If coasting is not needed, MODE_DRIVE_BRAKE should 
 //be used as it is computationally easier but there is little actual difference
-enum DriveType
+enum DriveMethod
 {
-	MODE_DRIVE_BRAKE, //Phase/Enable mode
-	MODE_DRIVE_BRAKE_COAST //PWM or IN/IN mode
+	METHOD_DRIVE_BRAKE, //Phase/Enable mode
+	METHOD_DRIVE_BRAKE_COAST //PWM or IN/IN mode
 };
 
-
+enum HomingMethod
+{
+	METHOD_NEG_LIMIT_SWITCH,
+	METHOD_POS_LIMIT_SWITCH,
+	METHOD_POT_ZERO,
+	METHOD_ENCODER_ZERO
+};
 
 /** @name CommandType
  *
