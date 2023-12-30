@@ -70,7 +70,8 @@ enum CommandType : uint8_t
 	CMD_GET_LOCATION_GOAL,
 
 	//Get errors
-	CMD_GET_ERRORS
+	CMD_GET_ERRORS,
+	CMD_CLEAR_ERRORS
 
 };
 
