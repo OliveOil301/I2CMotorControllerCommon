@@ -61,7 +61,7 @@ enum CommandType : uint8_t
 	//Get goals
 	CMD_GET_SPEED_GOAL,
 	CMD_GET_POSITION_GOAL,
-	CMD_GET_LOCAITON_GOAL,
+	CMD_GET_LOCATION_GOAL,
 
 	//Get errors
 	CMD_GET_ERRORS
