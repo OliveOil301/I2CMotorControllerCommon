@@ -2,6 +2,13 @@
 #define I2CMotorControllerCommon_h
 #include <Arduino.h>
 
+enum CommunicationMethod
+{
+	METHOD_I2C,
+	METHOD_SERIAL,
+	METHOD_SPI
+};
+
 //This is the drive type for the motor driver. 
 //If coasting is not needed, MODE_DRIVE_BRAKE should 
 //be used as it is computationally easier but there is little actual difference
@@ -32,6 +39,7 @@ enum CommandType : uint8_t
 	CMD_SET_POSITION_PID,
 	CMD_SET_VELOCITY_PID,
 	CMD_FIND_HOME,
+	CMD_HOME,
 
 	//Set
 	CMD_SET_DRIVE_TYPE,
@@ -79,10 +87,6 @@ enum ResponseType : uint8_t
 	RSP_AT_SPEED,
 	RSP_AT_POSITION
 };
-
-uint8_t splitUInt32P1_4(uint32_t longNumber);
-
-
 
 
 #endif
