@@ -26,6 +26,12 @@ enum HomingMethod
 	METHOD_ENCODER_ZERO
 };
 
+enum LocationControlMethod
+{
+	METHOD_POT,
+	METHOD_ENCODER
+};
+
 /** @name CommandType
  *
  * @brief this typedef is used during I2C communication to define exactly what the raw data that is transmitted is supposed to represent
