@@ -80,5 +80,9 @@ enum ResponseType : uint8_t
 	RSP_AT_POSITION
 };
 
+uint8_t splitUInt32P1_4(uint32_t longNumber);
+
+
+
 
 #endif
