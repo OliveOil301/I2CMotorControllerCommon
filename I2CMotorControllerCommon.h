@@ -4,32 +4,29 @@
 
 enum CommunicationMethod
 {
-	METHOD_I2C,
-	METHOD_SERIAL,
-	METHOD_SPI
+	COMM_I2C,
+	COMM_UART,
+	COMM_SPI
 };
 
-//This is the drive type for the motor driver. 
-//If coasting is not needed, MODE_DRIVE_BRAKE should 
-//be used as it is computationally easier but there is little actual difference
-enum DriveMethod
-{
-	METHOD_DRIVE_BRAKE, //Phase/Enable mode
-	METHOD_DRIVE_BRAKE_COAST //PWM or IN/IN mode
-};
 
 enum HomingMethod
 {
-	METHOD_NEG_LIMIT_SWITCH,
-	METHOD_POS_LIMIT_SWITCH,
-	METHOD_POT_ZERO,
-	METHOD_ENCODER_ZERO
+	HOMING_NONE,
+	HOMING_LIMIT_SWITCH_NEG,
+	HOMING_LIMIT_SWITCH_POS,
+	HOMING_POT_ZERO,
+	HOMING_POT_VALUE,
+	HOMING_ENCODER_ZERO,
+	HOMING_ENCODER_VALUE
 };
 
-enum LocationControlMethod
+enum PositionControlMethod
 {
-	METHOD_POT,
-	METHOD_ENCODER
+	POSITION_NONE,
+	POSITION_POT,
+	POSITION_ENCODER,
+	POSITION_TIME
 };
 
 /** @name CommandType
@@ -39,39 +36,44 @@ enum LocationControlMethod
 enum CommandType : uint8_t
 {
 	//Init
-	CMD_INIT,
-	CMD_SET_HOMING_METHOD,
-	CMD_SET_ENCODER_TICS,
-	CMD_SET_POSITION_PID,
-	CMD_SET_VELOCITY_PID,
-	CMD_FIND_HOME,
-	CMD_HOME,
+	CMD_BEGIN,
+
+	CMD_ENABLE_LIM_SWITCH, //Enable a limit switch
+	CMD_SET_POSITION_CONTROL_METHOD,
+	CMD_SET_HOMING_METHOD, //
+
+
+	CMD_SET_ENCODER_TICS,	//If using a quaderature encoder, sets the current encoder tick number to the supplied number
+	CMD_SET_PID_VALUE,	//Set a P, I, or D value for position or velocity control
+	CMD_GO_LIM_SWITCH,			//Go to a specified limit switch (oftentimes home)
 
 	//Set
-	CMD_SET_DRIVE_TYPE,
 	CMD_SET_POSITION_GOAL,
 	CMD_SET_VELOCITY_GOAL,
-	CMD_SET_LOCATION_GOAL,
-	CMD_SET_COAST,
+	CMD_SET_LOCATION_GOAL, //One of the limit switches (+/-)
+	CMD_SET_COAST, //Just coast
+	CMD_SET_BRAKE, //Brake the motor
+	CMD_MAINTAIN_POSITION, // Maintain the current position actively using the set PID values
 
 	//Get
-	CMD_AT_POSITION,
-	CMD_GET_POSITION,
-	CMD_AT_VELOCITY,
-	CMD_GET_VELOCITY,
-	CMD_AT_LOCATION,
-	CMD_GET_LOCATION,
+	CMD_AT_POSITION, //Returns true if this was previously/currently in position control mode and at the position specified
+	CMD_GET_POSITION, //Returns the position (encoder ticks, pot value, time, depending on position control method)
+	CMD_AT_VELOCITY, //Returns true if this was previously/currently in velocity control mode and at the velocity specified
+	CMD_GET_VELOCITY, //Returns the velocity (encoder ticks/s, pot values/s, %duty cycle, depending on position control method)
+	CMD_AT_LOCATION, //Returns true if this was previously/currently in location control mode and at the location specified (+/- lim sw)
+	CMD_GET_LOCATION, //Returns the limit switch that the actuator is at, if any
 
-	CMD_GET_CURRENT,
+	CMD_GET_CURRENT, //Returns the current of the motor at this point in time
 
 	//Get goals
-	CMD_GET_SPEED_GOAL,
 	CMD_GET_POSITION_GOAL,
+	CMD_GET_VELOCITY_GOAL,
 	CMD_GET_LOCATION_GOAL,
 
 	//Get errors
 	CMD_GET_ERRORS,
 	CMD_CLEAR_ERRORS
+
 
 };
 
@@ -86,11 +88,8 @@ enum CommandType : uint8_t
  */
 enum ResponseType : uint8_t
 {
-	RSP_INIT_RESULT,
-	RSP_DRIVE_TYPE,
-	RSP_POSITION,
-	RSP_SPEED,
-	RSP_CURRENT,
+	RSP_BEGIN,
+	RSP_VALUE, // Position, velocity, location, or current value
 	RSP_AT_SPEED,
 	RSP_AT_POSITION
 };
