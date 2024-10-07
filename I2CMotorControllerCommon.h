@@ -78,6 +78,51 @@ enum CommandType : uint8_t
 };
 
 
+struct MotorControllerMessage
+{
+    MotorControllerMessage(uint8_t dataIn[8])
+    {
+        //Save the command
+        command = (CommandType)data[0];
+        //Save the key
+        key = (data[2]<<8) | (data[1]);
+        //Save the value
+        value = (data[6]<<24) | (data[5]<<16) | (data[4]<<8) | (data[3]);
+        //Copy the data
+        memcpy(data, dataIn, 8);
+    }
+
+    MotorControllerMessage(CommandType commandIn, uint16_t keyIn, uint32_t valueIn)
+    {
+        //Save the command
+        command = commandIn;
+        //Save the key
+        key = keyIn;
+        //Save the value
+        value = valueIn;
+    }
+
+    void MotorControllerMessage::toData(uint8_t *&dataOut)
+    {
+        //Copy the data in case it got changed
+        data[0] = command;
+        data[1] = (key&0x00FF);
+        data[2] = (key&0xFF00)>>8;
+        data[3] = (command&0x000000FF);
+        data[4] = (command&0x0000FF00)>>8;
+        data[5] = (command&0x00FF0000)>>16;
+        data[6] = (command&0xFF000000)>>24;
+        data[7] = 0xFF;
+
+        //Copy our data to dataOut
+        memcpy(dataOut, data, 8);
+    }
+
+    CommandType command;
+    uint16_t key;
+    uint32_t value;
+    uint8_t data[8];
+};
 
 
 
