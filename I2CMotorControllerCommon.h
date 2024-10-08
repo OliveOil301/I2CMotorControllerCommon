@@ -9,6 +9,15 @@ enum CommunicationMethod
 	COMM_SPI
 };
 
+enum GoalType
+{
+	GOAL_UNKNOWN = 0,
+	GOAL_POSITION_GO = 1,
+	GOAL_POSITION_HOLD = 2,
+	GOAL_VELOCITY_GO = 3,
+	GOAL_VELOCITY_HOLD = 4
+};
+
 
 enum HomingMethod
 {
@@ -29,65 +38,76 @@ enum PositionControlMethod
 	POSITION_TIME
 };
 
+enum ValueType
+{
+	VALUE_POS_LIM_SWITCH_ENABLE = 1,
+	VALUE_NEG_LIM_SWITCH_ENABLE = 2,
+	VALUE_POSITION_CONTROL_METHOD = 5,
+	VALUE_HOMING_METHOD = 7,
+	VALUE_POSITION_PID_P = 10,
+	VALUE_POSITION_PID_I = 11,
+	VALUE_POSITION_PID_D = 12,
+	VALUE_VELOCITY_PID_P = 13,
+	VALUE_VELOCITY_PID_I = 14,
+	VALUE_VELOCITY_PID_D = 15,
+	VALUE_ENCODER_TICS = 20,
+	VALUE_HOME_POSITION = 25,
+	VALUE_END_POSITION = 26,
+	VALUE_CURRENT_POSITION = 30,
+	VALUE_CURRENT_VELOCITY = 31,
+	VALUE_CURRENT_CURRENT = 32,
+	VALUE_POSITION_GOAL = 35,
+	VALUE_VELOCITY_GOAL = 36,
+	VALUE_ERROR = 50,
+};
+
 /** @name CommandType
  *
  * @brief this typedef is used during I2C communication to define exactly what the raw data that is transmitted is supposed to represent
  */
 enum CommandType : uint8_t
 {
+	CMD_UNKNOWN = 0,
 	//Init
-	CMD_BEGIN,
-
-	CMD_ENABLE_LIM_SWITCH, //Enable a limit switch
-	CMD_SET_POSITION_CONTROL_METHOD,
-	CMD_SET_HOMING_METHOD, //
-
-
-	CMD_SET_ENCODER_TICS,	//If using a quaderature encoder, sets the current encoder tick number to the supplied number
-	CMD_SET_PID_VALUE,	//Set a P, I, or D value for position or velocity control
-	CMD_GO_LIM_SWITCH,			//Go to a specified limit switch (oftentimes home)
+	CMD_BEGIN = 1,
+	CMD_GO_LIM_SWITCH = 25,			//Go to a specified limit switch (oftentimes home)
 
 	//Set
-	CMD_SET_POSITION_GOAL,
-	CMD_SET_VELOCITY_GOAL,
-	CMD_SET_LOCATION_GOAL, //One of the limit switches (+/-)
-	CMD_SET_COAST, //Just coast
-	CMD_SET_BRAKE, //Brake the motor
-	CMD_MAINTAIN_POSITION, // Maintain the current position actively using the set PID values
+	CMD_SET_GOAL = 30,
+	CMD_SET_COAST = 35, //Just coast
+	CMD_SET_BRAKE = 36, //Brake the motor
+	CMD_MAINTAIN_POSITION = 37, // Maintain the current position actively using the set PID values
 
-	//Get
-	CMD_AT_POSITION, //Returns true if this was previously/currently in position control mode and at the position specified
-	CMD_GET_POSITION, //Returns the position (encoder ticks, pot value, time, depending on position control method)
-	CMD_AT_VELOCITY, //Returns true if this was previously/currently in velocity control mode and at the velocity specified
-	CMD_GET_VELOCITY, //Returns the velocity (encoder ticks/s, pot values/s, %duty cycle, depending on position control method)
-	CMD_AT_LOCATION, //Returns true if this was previously/currently in location control mode and at the location specified (+/- lim sw)
-	CMD_GET_LOCATION, //Returns the limit switch that the actuator is at, if any
-
-	CMD_GET_CURRENT, //Returns the current of the motor at this point in time
-
-	//Get goals
-	CMD_GET_POSITION_GOAL,
-	CMD_GET_VELOCITY_GOAL,
-	CMD_GET_LOCATION_GOAL,
-
-	//Get errors
-	CMD_GET_ERRORS,
-	CMD_CLEAR_ERRORS
-
-
+	//Get/set configuration and other values
+	CMD_GET = 40, 
+	CMD_SET = 41,
 };
 
 
 struct MotorControllerMessage
 {
+	MotorControllerMessage()
+	{
+		command = CMD_UNKNOWN;
+    	key = 0;
+    	value = 0;
+		for(int i = 0; i<8; i++)
+		{
+    		data[i] = 0;
+		}
+
+	}
     MotorControllerMessage(uint8_t dataIn[8])
     {
         //Save the command
-        command = (CommandType)data[0];
+        command = (CommandType)dataIn[0];
+		Serial.println("Message Command: " + String(command, 10) + " Data: 0x" + String(dataIn[0], 16));
         //Save the key
-        key = (data[2]<<8) | (data[1]);
+        key = (((uint16_t)dataIn[2])<<8) | (((uint16_t)dataIn[1]));
+		Serial.println("Message Key: " + String(key, 10));
         //Save the value
-        value = (data[6]<<24) | (data[5]<<16) | (data[4]<<8) | (data[3]);
+        value = (((uint32_t)dataIn[6])<<24) | (((uint32_t)dataIn[5])<<16) | (((uint32_t)dataIn[4])<<8) | (((uint32_t)dataIn[3]));
+		Serial.println("Message Value: " + String(value, 10));
         //Copy the data
         memcpy(data, dataIn, 8);
     }
@@ -118,6 +138,18 @@ struct MotorControllerMessage
         memcpy(dataOut, data, 8);
     }
 
+	const String MotorControllerMessage::toString(bool hex) const
+    {
+		if(!hex)
+		{
+			return "Command: " + String(command) + " Key: " + String(key) + " Value: " + String(value);
+		}
+		else
+		{
+			return "0x" + String(data[0], 16) + " 0x" + String(data[1], 16) +  + " 0x" + String(data[2], 16) +  + " 0x" + String(data[3], 16) +  + " 0x" + String(data[4], 16) +  + " 0x" + String(data[5], 16) +  + " 0x" + String(data[6], 16) +  + " 0x" + String(data[7], 16);
+		}
+    }
+
     CommandType command;
     uint16_t key;
     uint32_t value;
@@ -138,6 +170,37 @@ enum ResponseType : uint8_t
 	RSP_AT_SPEED,
 	RSP_AT_POSITION
 };
+
+byte* floatToByteArray(float f) {
+	uint32_t intval = *reinterpret_cast<uint32_t*>(&f);
+    byte* ret = (byte*)malloc(4 * sizeof(byte));
+
+    int i;
+    for (i = 0; i < 4; i++) {
+        ret[i] = (intval >> 8 * i) & 0xFF;
+    }
+
+    return ret;
+}
+
+float byteArrayToFloat(byte* arr) {
+	//Initialize a 32-bit uinteger as 0
+	uint32_t asInt = 0;
+    int i;
+	//From 0 to 3
+    for (i = 0; i < 4; i++) {
+		//OR byte i of the array with the appropriate location in the uinteger we made earlier
+		asInt |= ((((uint32_t)arr[i])& 0xFF)<< (8 * i));
+		Serial.println("Byte " + String(i) + ": " + String(arr[i], 2) + " Shifted: " + String(asInt, 2));
+        //ret[i] = (asInt >> 8 * i) & 0xFF;
+    }
+
+	Serial.println("Int representation: 0b" + String(asInt, 2));
+	float fltval = *reinterpret_cast<float*>(&asInt);
+
+	//Return the float value
+    return fltval;
+}
 
 
 #endif
