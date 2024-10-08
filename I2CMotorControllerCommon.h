@@ -2,14 +2,14 @@
 #define I2CMotorControllerCommon_h
 #include <Arduino.h>
 
-enum CommunicationMethod
+enum CommunicationMethod : uint8_t
 {
 	COMM_I2C,
 	COMM_UART,
 	COMM_SPI
 };
 
-enum GoalType
+enum GoalType : uint8_t
 {
 	GOAL_UNKNOWN = 0,
 	GOAL_POSITION_GO = 1,
@@ -19,26 +19,26 @@ enum GoalType
 };
 
 
-enum HomingMethod
+enum HomingMethod : uint8_t
 {
-	HOMING_NONE,
-	HOMING_LIMIT_SWITCH_NEG,
-	HOMING_LIMIT_SWITCH_POS,
-	HOMING_POT_ZERO,
-	HOMING_POT_VALUE,
-	HOMING_ENCODER_ZERO,
-	HOMING_ENCODER_VALUE
+	HOMING_NONE = 0,
+	HOMING_LIMIT_SWITCH_NEG = 1,
+	HOMING_LIMIT_SWITCH_POS = 2,
+	HOMING_POT_ZERO = 3,
+	HOMING_POT_VALUE = 4,
+	HOMING_ENCODER_ZERO = 5,
+	HOMING_ENCODER_VALUE = 6
 };
 
-enum PositionControlMethod
+enum PositionControlMethod : uint8_t
 {
-	POSITION_NONE,
-	POSITION_POT,
-	POSITION_ENCODER,
-	POSITION_TIME
+	POSITION_NONE = 0,
+	POSITION_POT = 1,
+	POSITION_ENCODER = 2,
+	POSITION_TIME = 3
 };
 
-enum ValueType
+enum ValueType : uint8_t
 {
 	VALUE_POS_LIM_SWITCH_ENABLE = 1,
 	VALUE_NEG_LIM_SWITCH_ENABLE = 2,
@@ -58,7 +58,10 @@ enum ValueType
 	VALUE_CURRENT_CURRENT = 32,
 	VALUE_POSITION_GOAL = 35,
 	VALUE_VELOCITY_GOAL = 36,
-	VALUE_ERROR = 50,
+	VALUE_ERROR0 = 50,
+	VALUE_ERROR1 = 51,
+	VALUE_ERROR2 = 52,
+	VALUE_ERROR3 = 53,
 };
 
 /** @name CommandType
@@ -158,48 +161,27 @@ struct MotorControllerMessage
 
 
 
-/** @name ResponseType
- *
- * @brief This is a typedef that is used during I2C communication to define what data is in the rest of the message
- * The FW and the library will both use these types to unpack the I2C data transmission
- */
-enum ResponseType : uint8_t
-{
-	RSP_BEGIN,
-	RSP_VALUE, // Position, velocity, location, or current value
-	RSP_AT_SPEED,
-	RSP_AT_POSITION
-};
-
-byte* floatToByteArray(float f) {
+uint32_t floatToUInt(float f) {
 	uint32_t intval = *reinterpret_cast<uint32_t*>(&f);
-    byte* ret = (byte*)malloc(4 * sizeof(byte));
 
-    int i;
-    for (i = 0; i < 4; i++) {
-        ret[i] = (intval >> 8 * i) & 0xFF;
-    }
-
-    return ret;
+    return intval;
 }
 
-float byteArrayToFloat(byte* arr) {
-	//Initialize a 32-bit uinteger as 0
-	uint32_t asInt = 0;
-    int i;
-	//From 0 to 3
-    for (i = 0; i < 4; i++) {
-		//OR byte i of the array with the appropriate location in the uinteger we made earlier
-		asInt |= ((((uint32_t)arr[i])& 0xFF)<< (8 * i));
-		Serial.println("Byte " + String(i) + ": " + String(arr[i], 2) + " Shifted: " + String(asInt, 2));
-        //ret[i] = (asInt >> 8 * i) & 0xFF;
-    }
-
-	Serial.println("Int representation: 0b" + String(asInt, 2));
-	float fltval = *reinterpret_cast<float*>(&asInt);
+float uIntToFloat(uint32_t uintIn) {
+	float fltval = *reinterpret_cast<float*>(&uintIn);
 
 	//Return the float value
     return fltval;
+}
+
+int32_t unsignedIntToSignedInt(uint32_t uintIn)
+{
+	return (uintIn < 0xFFFFFFFF/2) ? (((int32_t)uintIn)-(0xFFFFFFFF/2)) : ((int32_t)(uintIn-(0xFFFFFFFF/2)));
+}
+
+uint32_t signedIntToUnsignedInt(int32_t intIn)
+{
+	return (intIn < 0) ? ((uint32_t)(intIn + (0xFFFFFFFF/2))) : (((uint32_t)intIn) + (0xFFFFFFFF/2));
 }
 
 
