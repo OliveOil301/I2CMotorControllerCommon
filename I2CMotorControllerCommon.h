@@ -64,10 +64,33 @@ enum ValueType : uint8_t
 	VALUE_CURRENT_CURRENT = 32,
 	VALUE_POSITION_GOAL = 35,
 	VALUE_VELOCITY_GOAL = 36,
-	VALUE_ERROR0 = 50,
-	VALUE_ERROR1 = 51,
-	VALUE_ERROR2 = 52,
-	VALUE_ERROR3 = 53,
+	//Driver pins
+	VALUE_PIN_DRIVER_1 = 37,
+	VALUE_PIN_DRIVER_2 = 38,
+	VALUE_PIN_DRIVER_3 = 39,
+	VALUE_PIN_DRIVER_4 = 40,
+	VALUE_PIN_DRIVER_5 = 41,
+	VALUE_PIN_DRIVER_6 = 42,
+	VALUE_PIN_DRIVER_7 = 43,
+	VALUE_PIN_DRIVER_8 = 44,
+	VALUE_PIN_DRIVER_9 = 45,
+	VALUE_PIN_DRIVER_10 = 46,
+	VALUE_PIN_DRIVER_11 = 47,
+	VALUE_PIN_DRIVER_12 = 48,
+	//position input pins
+	VALUE_PIN_INPUT_1 = 61,
+	VALUE_PIN_INPUT_2 = 62,
+	VALUE_PIN_INPUT_3 = 63,
+	VALUE_PIN_INPUT_4 = 64,
+	VALUE_PIN_INPUT_5 = 65,
+	VALUE_PIN_INPUT_6 = 66,
+	VALUE_PIN_INPUT_7 = 67,
+	VALUE_PIN_INPUT_8 = 68,
+
+	VALUE_ERROR0 = 80,
+	VALUE_ERROR1 = 81,
+	VALUE_ERROR2 = 82,
+	VALUE_ERROR3 = 83,
 };
 
 /** @name CommandType
@@ -194,7 +217,10 @@ inline float uIntToFloat(uint32_t uintIn) {
     return fltval;
 }
 
-inline int32_t unsignedIntToSignedInt(uint32_t uintIn) { return (uintIn < 0xFFFFFFFF/2) ? (((int32_t)uintIn)-(0xFFFFFFFF/2)) : ((int32_t)(uintIn-(0xFFFFFFFF/2)));}
+inline int32_t unsignedIntToSignedInt(uint32_t uintIn) 
+{ 
+	return (uintIn < 0xFFFFFFFF/2) ? (((int32_t)uintIn)-(0xFFFFFFFF/2)) : ((int32_t)(uintIn-(0xFFFFFFFF/2)));
+	}
 
 inline uint32_t signedIntToUnsignedInt(int32_t intIn)
 {
