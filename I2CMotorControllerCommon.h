@@ -130,6 +130,15 @@ struct MotorControllerMessage
         key = keyIn;
         //Save the value
         value = valueIn;
+        //Copy the data in case it got changed
+        data[0] = command;
+        data[1] = (key&0x00FF);
+        data[2] = (key&0xFF00)>>8;
+        data[3] = (value&0x000000FF);
+        data[4] = (value&0x0000FF00)>>8;
+        data[5] = (value&0x00FF0000)>>16;
+        data[6] = (value&0xFF000000)>>24;
+        data[7] = 0xFF;
     }
 
     void toData(uint8_t *&dataOut)
@@ -138,10 +147,10 @@ struct MotorControllerMessage
         data[0] = command;
         data[1] = (key&0x00FF);
         data[2] = (key&0xFF00)>>8;
-        data[3] = (command&0x000000FF);
-        data[4] = (command&0x0000FF00)>>8;
-        data[5] = (command&0x00FF0000)>>16;
-        data[6] = (command&0xFF000000)>>24;
+        data[3] = (value&0x000000FF);
+        data[4] = (value&0x0000FF00)>>8;
+        data[5] = (value&0x00FF0000)>>16;
+        data[6] = (value&0xFF000000)>>24;
         data[7] = 0xFF;
 
         //Copy our data to dataOut
