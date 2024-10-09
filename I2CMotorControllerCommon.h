@@ -18,6 +18,12 @@ enum GoalType : uint8_t
 	GOAL_VELOCITY_HOLD = 4
 };
 
+enum LimitSwitch : uint8_t
+{
+	LIMIT_SWITCH_HOME = 1,
+	LIMIT_SWITCH_END = 2,
+};
+
 
 enum HomingMethod : uint8_t
 {
@@ -73,8 +79,9 @@ enum CommandType : uint8_t
 	CMD_UNKNOWN = 0,
 	//Init
 	CMD_BEGIN = 1,
-	CMD_GO_LIM_SWITCH = 25,			//Go to a specified limit switch (oftentimes home)
-
+	CMD_GO_HOME = 25,			//Go to a specified limit switch (oftentimes home)
+	CMD_GO_END = 26,
+	
 	//Set
 	CMD_SET_GOAL = 30,
 	CMD_SET_COAST = 35, //Just coast
@@ -125,7 +132,7 @@ struct MotorControllerMessage
         value = valueIn;
     }
 
-    void MotorControllerMessage::toData(uint8_t *&dataOut)
+    void toData(uint8_t *&dataOut)
     {
         //Copy the data in case it got changed
         data[0] = command;
@@ -141,7 +148,7 @@ struct MotorControllerMessage
         memcpy(dataOut, data, 8);
     }
 
-	const String MotorControllerMessage::toString(bool hex) const
+	const String toString(bool hex) const
     {
 		if(!hex)
 		{
@@ -161,25 +168,26 @@ struct MotorControllerMessage
 
 
 
-uint32_t floatToUInt(float f) {
-	uint32_t intval = *reinterpret_cast<uint32_t*>(&f);
+inline uint32_t floatToUInt(float f) {
+	uint32_t intval;
+	memcpy(&intval, &f, sizeof(intval));
+	//uint32_t intval = *reinterpret_cast<uint32_t*>(&f);
 
     return intval;
 }
 
-float uIntToFloat(uint32_t uintIn) {
-	float fltval = *reinterpret_cast<float*>(&uintIn);
+inline float uIntToFloat(uint32_t uintIn) {
+	float fltval;
+	memcpy(&fltval, &uintIn, sizeof(fltval));
+	//float fltval = *reinterpret_cast<float*>(&uintIn);
 
 	//Return the float value
     return fltval;
 }
 
-int32_t unsignedIntToSignedInt(uint32_t uintIn)
-{
-	return (uintIn < 0xFFFFFFFF/2) ? (((int32_t)uintIn)-(0xFFFFFFFF/2)) : ((int32_t)(uintIn-(0xFFFFFFFF/2)));
-}
+inline int32_t unsignedIntToSignedInt(uint32_t uintIn) { return (uintIn < 0xFFFFFFFF/2) ? (((int32_t)uintIn)-(0xFFFFFFFF/2)) : ((int32_t)(uintIn-(0xFFFFFFFF/2)));}
 
-uint32_t signedIntToUnsignedInt(int32_t intIn)
+inline uint32_t signedIntToUnsignedInt(int32_t intIn)
 {
 	return (intIn < 0) ? ((uint32_t)(intIn + (0xFFFFFFFF/2))) : (((uint32_t)intIn) + (0xFFFFFFFF/2));
 }
