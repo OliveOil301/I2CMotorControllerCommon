@@ -30,10 +30,8 @@ enum HomingMethod : uint8_t
 	HOMING_NONE = 0,
 	HOMING_LIMIT_SWITCH_NEG = 1,
 	HOMING_LIMIT_SWITCH_POS = 2,
-	HOMING_POT_ZERO = 3,
-	HOMING_POT_VALUE = 4,
-	HOMING_ENCODER_ZERO = 5,
-	HOMING_ENCODER_VALUE = 6
+	HOMING_POSITION_ZERO = 3,
+	HOMING_POSITION_VALUE = 4,
 };
 
 enum PositionControlMethod : uint8_t
@@ -50,6 +48,7 @@ enum ValueType : uint8_t
 	VALUE_NEG_LIM_SWITCH_ENABLE = 2,
 	VALUE_POSITION_CONTROL_METHOD = 5,
 	VALUE_HOMING_METHOD = 7,
+	VALUE_ENDING_METHOD = 8,
 	VALUE_POSITION_PID_P = 10,
 	VALUE_POSITION_PID_I = 11,
 	VALUE_POSITION_PID_D = 12,
@@ -86,11 +85,29 @@ enum ValueType : uint8_t
 	VALUE_PIN_INPUT_6 = 66,
 	VALUE_PIN_INPUT_7 = 67,
 	VALUE_PIN_INPUT_8 = 68,
+	//Other driver configuration values
+	VALUE_DRIVER_CONFIGURATION_1 = 81,
+	VALUE_DRIVER_CONFIGURATION_2 = 82,
+	VALUE_DRIVER_CONFIGURATION_3 = 83,
+	VALUE_DRIVER_CONFIGURATION_4 = 84,
+	VALUE_DRIVER_CONFIGURATION_5 = 85,
+	VALUE_DRIVER_CONFIGURATION_6 = 86,
+	VALUE_DRIVER_CONFIGURATION_7 = 87,
+	VALUE_DRIVER_CONFIGURATION_8 = 88,
+	VALUE_DRIVER_CONFIGURATION_9 = 89,
+	VALUE_DRIVER_CONFIGURATION_10 = 90,
+	VALUE_DRIVER_CONFIGURATION_11 = 91,
+	VALUE_DRIVER_CONFIGURATION_12 = 92,
+	VALUE_DRIVER_CONFIGURATION_13 = 93,
+	VALUE_DRIVER_CONFIGURATION_14 = 94,
+	VALUE_DRIVER_CONFIGURATION_15 = 95,
+	VALUE_DRIVER_CONFIGURATION_16 = 96,
 
-	VALUE_ERROR0 = 80,
-	VALUE_ERROR1 = 81,
-	VALUE_ERROR2 = 82,
-	VALUE_ERROR3 = 83,
+
+	VALUE_ERROR0 = 128,
+	VALUE_ERROR1 = 129,
+	VALUE_ERROR2 = 130,
+	VALUE_ERROR3 = 131,
 };
 
 /** @name CommandType
@@ -134,13 +151,13 @@ struct MotorControllerMessage
     {
         //Save the command
         command = (CommandType)dataIn[0];
-		Serial.println("Message Command: " + String(command, 10) + " Data: 0x" + String(dataIn[0], 16));
+		//Serial.println("Message Command: " + String(command, 10) + " Data: 0x" + String(dataIn[0], 16));
         //Save the key
         key = (((uint16_t)dataIn[2])<<8) | (((uint16_t)dataIn[1]));
-		Serial.println("Message Key: " + String(key, 10));
+		//Serial.println("Message Key: " + String(key, 10));
         //Save the value
         value = (((uint32_t)dataIn[6])<<24) | (((uint32_t)dataIn[5])<<16) | (((uint32_t)dataIn[4])<<8) | (((uint32_t)dataIn[3]));
-		Serial.println("Message Value: " + String(value, 10));
+		//Serial.println("Message Value: " + String(value, 10));
         //Copy the data
         memcpy(data, dataIn, 8);
     }
@@ -220,7 +237,7 @@ inline float uIntToFloat(uint32_t uintIn) {
 inline int32_t unsignedIntToSignedInt(uint32_t uintIn) 
 { 
 	return (uintIn < 0xFFFFFFFF/2) ? (((int32_t)uintIn)-(0xFFFFFFFF/2)) : ((int32_t)(uintIn-(0xFFFFFFFF/2)));
-	}
+}
 
 inline uint32_t signedIntToUnsignedInt(int32_t intIn)
 {
