@@ -151,13 +151,10 @@ struct MotorControllerMessage
     {
         //Save the command
         command = (CommandType)dataIn[0];
-		//Serial.println("Message Command: " + String(command, 10) + " Data: 0x" + String(dataIn[0], 16));
         //Save the key
         key = (((uint16_t)dataIn[2])<<8) | (((uint16_t)dataIn[1]));
-		//Serial.println("Message Key: " + String(key, 10));
         //Save the value
         value = (((uint32_t)dataIn[6])<<24) | (((uint32_t)dataIn[5])<<16) | (((uint32_t)dataIn[4])<<8) | (((uint32_t)dataIn[3]));
-		//Serial.println("Message Value: " + String(value, 10));
         //Copy the data
         memcpy(data, dataIn, 8);
     }
